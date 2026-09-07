@@ -1,0 +1,17 @@
+name = "nfl26-api"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# Filled in by tools/cf-setup.sh (npx wrangler d1 create nfl26)
+[[d1_databases]]
+binding = "DB"
+database_name = "nfl26"
+database_id = "REPLACE_ME"
+
+[vars]
+# Browser origins allowed to call this API (comma-separated).
+ALLOWED_ORIGINS = "https://nfl26-master-primez.vercel.app,http://localhost:3000"
+# Optional: Google OAuth client ID enables "Sign in with Google". Leave empty to hide it.
+GOOGLE_CLIENT_ID = ""
+# Who may open the private stats page (comma-separated emails). They re-enter their password to view it.
+ADMIN_EMAILS = "michael.stine@gmail.com"

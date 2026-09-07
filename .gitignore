@@ -1,0 +1,7 @@
+dist/
+shots/
+node_modules/
+.DS_Store
+tools/logos/
+.wrangler/
+_to_delete/

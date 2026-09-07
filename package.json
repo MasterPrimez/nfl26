@@ -1,0 +1,15 @@
+{
+  "name": "nfl26",
+  "version": "1.0.0",
+  "description": "NFL/26 \u2014 live scores, kickoff times, TV networks, how-to-watch, division standings, the 14-team playoff picture and a Sunday channel grid for the 2026 NFL season.",
+  "scripts": {
+    "shots": "node tools/shots.mjs iphone"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.63.0"
+  },
+  "private": true
+}
