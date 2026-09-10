@@ -1,5 +1,5 @@
 import { esc, filterBar, applyFilter, isMobile, gameRowMobile, viewSwitch, pinchZoom, zoomControl } from '../ui.js';
-import { fmtDay, dayKey, hourOf, tzLabel, state } from '../state.js';
+import { fmtDay, dayKey, hourOf, tzLabel, tzName, state } from '../state.js';
 import { NETWORK_ORDER, networkClass, primaryNetwork, watchSummary, watchOptions, markHtml } from '../networks.js';
 
 const GAME_HOURS = 3.5;
@@ -63,7 +63,8 @@ export function renderTV(ctx, params) {
     </div>`).join('');
   }).join('');
 
-  return header() + `<div class="tvwrap" id="tvwrap"><div class="tvgrid" id="tvgrid">${head}${rows}</div></div>${isMobile() ? zoomControl('tvzoom') : ''}
+  const nowLine = nowSameDay && nowH >= startH && nowH <= endH ? `<div class="tv-now" id="tv-now" data-start="${startH}" data-end="${endH}" style="left:calc(118px + (100% - 118px) * ${((nowH - startH) / (endH - startH)).toFixed(4)})"><i></i><b>${esc(fmtNow(now))}</b></div>` : '';
+  return header() + `<div class="tvwrap" id="tvwrap"><div class="tvgrid" id="tvgrid">${head}${rows}${nowLine}</div></div>${isMobile() ? zoomControl('tvzoom') : ''}
     <div class="legend"><span><i style="display:inline-block;width:10px;height:10px;border:1px solid var(--live);border-radius:2px;vertical-align:middle;margin-right:6px"></i>LIVE NOW</span><span><i style="display:inline-block;width:10px;height:10px;background:rgba(245,165,36,0.25);vertical-align:middle;margin-right:6px"></i>CURRENT HALF-HOUR</span><span>FINALS DIMMED · AWAY TEAM LEFT, HOME TEAM RIGHT · BLOCKS RUN ${GAME_HOURS} HRS AND EXTEND WHILE LIVE · TIMES IN ${tzLabel()}</span></div>`;
 
   function header() {
@@ -100,8 +101,17 @@ function slotLabel(h) {
   return `${h12}:${m}<br><span>${hh < 12 ? 'AM' : 'PM'}</span>`;
 }
 
-// Mobile: pinch (or +/−) zooms the grid.
+function fmtNow(d) { return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tzName() }); }
+
+// Mobile: pinch (or +/−) zooms the grid. The red "now" line moves once a minute.
+let nowTimer = null;
 export function mountTV(root) {
+  clearInterval(nowTimer);
+  const line = root.querySelector('#tv-now');
+  if (line) {
+    const tick = () => { if (!document.contains(line)) { clearInterval(nowTimer); return; } const now = new Date(), h = hourOf(now), a = Number(line.dataset.start), b = Number(line.dataset.end); if (h < a || h > b) { line.hidden = true; return; } line.hidden = false; line.style.left = `calc(118px + (100% - 118px) * ${((h - a) / (b - a)).toFixed(4)})`; line.querySelector('b').textContent = fmtNow(now); };
+    nowTimer = setInterval(tick, 30_000);
+  }
   const z = root.querySelector('#tvzoom');
   pinchZoom(root.querySelector('#tvwrap'), root.querySelector('#tvgrid'), 'nfl26.tvzoom.v1', { initial: isMobile() ? 0.8 : 1, label: z?.querySelector('.zv'), buttons: z ? [...z.querySelectorAll('[data-zoom]')] : [] });
 }

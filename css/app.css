@@ -167,7 +167,10 @@ td img.mini { width: 20px; height: 20px; object-fit: contain; vertical-align: mi
 
 /* TV grid */
 .tvwrap { overflow-x: auto; }
-.tvgrid { min-width: 1100px; }
+.tvgrid { min-width: 1100px; position: relative; }
+.tv-now { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid var(--live); z-index: 6; pointer-events: none; box-shadow: 0 0 10px rgba(255,90,74,.5); }
+.tv-now i { position: absolute; top: 40px; left: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 3px rgba(255,90,74,.25); }
+.tv-now b { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 9px; font-weight: 600; color: #111; background: var(--live); padding: 3px 6px; border-radius: 4px; white-space: nowrap; letter-spacing: .04em; }
 .tv-row { display: grid; grid-auto-rows: 58px; border-bottom: 1px solid var(--line2); position: relative; }
 .tv-row.head { grid-auto-rows: auto; border-bottom: 1px solid var(--line3); background: var(--bg); z-index: 5; }
 .tv-net { font-family: var(--disp); font-size: 19px; letter-spacing: 0.06em; padding: 0 10px; display: flex; align-items: center; border-right: 1px solid var(--line3); background: var(--bg2); grid-row: 1; grid-column: 1; z-index: 2; }
