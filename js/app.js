@@ -298,7 +298,7 @@ view.addEventListener('click', e => {
 $('#btn-settings').onclick = openModal;
 document.querySelector('.theme-toggle').addEventListener('click', e => { const b = e.target.closest('[data-theme]'); if (b) state.setTheme(b.dataset.theme); });
 $('#myteams').addEventListener('click', e => { if (e.target.closest('#add-team')) openModal(); });
-$('#modal-close').onclick = closeModal;
+$('#modal-close').onclick = closeModal; $('#modal-close-2').onclick = closeModal;
 $('#btn-signin').onclick = () => openModal();
 onAuth(u => { const b = $('#btn-signin'); if (!b) return; b.hidden = !authEnabled(); b.textContent = u ? 'Synced' : 'Sign in'; b.classList.toggle('on', !!u); if (!$('#modal').hidden) openModal(); });
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
