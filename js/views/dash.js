@@ -93,7 +93,7 @@ export function renderDash(ctx, d) {
   const streaks = (dir?.teams || []).map(t => ({ ...t, n: sv(t) })).filter(t => Math.abs(t.n) >= 2).sort((a, b) => Math.abs(b.n) - Math.abs(a.n) || b.n - a.n).slice(0, 4);
   const movTile = `<a class="dt mov pad" href="#/standings"><div class="k">HOT &amp; COLD<span class="more">STANDINGS</span></div>${streaks.map(t => `<div class="mvr"><img src="${esc(t.logo)}" alt="">${esc(t.name)}<b class="${t.n > 0 ? 'up' : 'dn'}">${t.n > 0 ? 'W' : 'L'}${Math.abs(t.n)}</b></div>`).join('') || '<div class="muted mono" style="font-size:11px">No streaks yet.</div>'}</a>`;
 
-  const html = `<div class="dashboard">${focus}${hero}<div class="dt lrail"><div class="k pad-h">LIVE NOW · MY TEAMS &amp; PRIMETIME<a class="more" href="#/scores">ALL SCORES</a></div><div class="lg">${rail}</div></div>${rankTile}${strideTile}${tvTile}${standTile}${cfpTile}${movTile}</div>`;
+  const html = `<div class="dashboard">${focus}${hero}<div class="dt lrail"><div class="k pad-h">LIVE NOW · MY TEAMS &amp; PRIMETIME<a class="more" href="#/scores">ALL SCORES</a></div><div class="lg">${rail}</div></div>${rankTile}${strideTile}${tvTile}${standTile}${cfpTile}${movTile}<div class="dash-foot mono"><span>Something you wish this did?</span><a href="mailto:michael.stine@gmail.com?subject=NFL%2F26%20feature%20request">Request a feature →</a><span class="sep">·</span><a href="mailto:michael.stine@gmail.com?subject=NFL%2F26%20feedback">Send feedback</a></div></div>`;
   return { html, mount: mountDash };
 }
 

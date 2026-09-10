@@ -743,6 +743,9 @@ a.dt:hover, .dt[data-href]:hover { border-color: var(--line3); color: var(--text
   .dt.cfp .seeds img { width: 26px; height: 26px; } .dt.cfp .seeds { gap: 3px; }
 }
 
+.dash-foot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px 0 4px; font-size: 11px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+.dash-foot a { color: var(--amber); }
+.dash-foot .sep { color: var(--dim); }
 /* NFL: two seed rows */
 .dt.cfp .seeds.nfl { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
 .dt.cfp .seedrow { display: flex; gap: 6px; align-items: center; }
