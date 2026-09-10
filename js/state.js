@@ -11,6 +11,7 @@ const defaults = () => ({
   layout: 'auto',     // 'auto' (phone layout on phones) | 'desktop' (force desktop layout, pinch to zoom)
   focus: null,        // team id the home story is about (defaults to first favorite)
   theme: 'default',   // 'default' | 'team' (focused team's colors)
+  dash: null,         // dashboard layout [{id, size}] or null for the default
 });
 
 let prefs = load();
@@ -62,6 +63,7 @@ export const state = {
   setLayout(l) { prefs.layout = l; emit(); },
   setTheme(t) { prefs.theme = t; emit(); },
   setFocus(id) { prefs.focus = id ? String(id) : null; emit(); },
+  setDash(layout) { prefs.dash = layout && layout.length ? layout.map(t => ({ id: String(t.id), size: t.size || 's' })) : null; emit(); },
   get focusTeam() { return prefs.focus && prefs.teams.includes(prefs.focus) ? prefs.focus : (prefs.teams[0] || null); },
   setFilter(f) { prefs.filter = f; emit(); },
   // Layer 2: replace the whole prefs object (from the account store) without echoing back to the sync listener.
@@ -75,7 +77,7 @@ export const state = {
     const r = remote || {};
     const teams = [...new Set([...(r.teams || []), ...prefs.teams])];
     const services = [...new Set([...(r.services || []), ...prefs.services])];
-    return { ...prefs, ...Object.fromEntries(Object.entries(r).filter(([k, v]) => ['tz', 'filter', 'layout', 'focus', 'theme'].includes(k) && v != null)), teams, services };
+    return { ...prefs, ...Object.fromEntries(Object.entries(r).filter(([k, v]) => ['tz', 'filter', 'layout', 'focus', 'theme', 'dash'].includes(k) && v != null)), teams, services };
   },
   shareUrl() {
     const q = new URLSearchParams();
