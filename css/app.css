@@ -791,8 +791,10 @@ a.dt:hover, .dt[data-href]:hover { border-color: var(--line3); color: var(--text
 .dt.countdown .cd small { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-right: 10px; }
 .dt.countdown .cd .big { font-size: 48px; line-height: 1; } .dt.countdown .cd .big.live { color: var(--live); } .dt.countdown .cd .big.nr { color: var(--muted); }
 /* Customizer */
-.cust-wrap { position: fixed; inset: 0; z-index: 60; }
-.cust-back { position: absolute; inset: 0; background: rgba(0,0,0,.6); }
+.cust-wrap { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.cust-back { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 50%, rgba(0,0,0,.35)); }
+.cust-panel { pointer-events: auto; }
+.dash-edit .dashboard { user-select: none; -webkit-user-select: none; }
 .cust-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--panel); border-left: 1px solid var(--line3); display: flex; flex-direction: column; box-shadow: -20px 0 60px rgba(0,0,0,.5); }
 .cust-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 18px 12px; border-bottom: 1px solid var(--line); }
 .cust-head .sub { margin-top: 6px; }
@@ -818,3 +820,16 @@ a.dt:hover, .dt[data-href]:hover { border-color: var(--line3); color: var(--text
 .dt.cfp .seedrow img { width: 30px; height: 30px; object-fit: contain; }
 
 .dt.upset .when { font-family: var(--mono); font-size: 10px; color: var(--muted); white-space: nowrap; }
+
+/* Dashboard edit mode: handles, grips, drop targets */
+.dt .grab, .dt .grip { display: none; }
+.dash-edit .dashboard .dt[data-tile] { outline: 1px dashed rgba(245,165,36,.45); outline-offset: -1px; }
+.dash-edit .dashboard .dt[data-tile] > *:not(.grab):not(.grip) { pointer-events: none; }
+.dash-edit .dashboard .dt[data-tile] .grab { display: flex; position: absolute; top: 8px; right: 8px; width: 30px; height: 26px; align-items: center; justify-content: center; border-radius: 6px; background: var(--amber); color: #111; font-size: 12px; letter-spacing: -2px; cursor: grab; z-index: 5; touch-action: none; user-select: none; }
+.dash-edit .dashboard .dt[data-tile] .grip { display: block; position: absolute; right: 0; bottom: 0; width: 26px; height: 26px; cursor: nwse-resize; z-index: 5; touch-action: none; background: linear-gradient(135deg, transparent 50%, var(--amber) 50%); border-bottom-right-radius: 9px; }
+.dash-edit .dashboard .dt[data-tile] .grip::after { content: attr(data-label); position: absolute; right: 30px; bottom: 4px; font-family: var(--mono); font-size: 10px; color: var(--amber); }
+.dash-edit .dashboard .dt.lifting { z-index: 40; opacity: .85; box-shadow: 0 20px 50px rgba(0,0,0,.6); transition: none; cursor: grabbing; }
+.dash-edit .dashboard .dt.drop { outline: 2px solid var(--amber); background: color-mix(in srgb, var(--amber) 10%, var(--panel)); }
+.dash-edit .dashboard .dt.resizing { outline: 2px solid var(--amber); transition: none; }
+.dash-edit .dashboard .dt[data-tile] { transition: opacity .5s ease, transform .5s ease, border-color .2s, grid-column 0s; }
+@media (max-width: 700px) { .cust-panel { width: 100%; } }

@@ -156,7 +156,7 @@ export function renderDash(ctx, d) {
     <div class="sub2">${next ? esc(fmtDay(next.date).toUpperCase()) + (next.tbd ? '' : ' · ' + fmtTime(next.date) + ' ' + tzLabel()) : 'SEASON COMPLETE'}</div></div>`;
 
   const built = { rank: rankTile, stride: strideTile, tv: tvTile, stand: standTile, cfp: cfpTile, mov: movTile, next3: next3Tile, form: formTile, line: lineTile, leaders: leadersTile, upset: upsetTile, close: closeTile, countdown: cdTile };
-  const tiles = layout.map(t => built[t.id] ? built[t.id].replace('class="dt ', `class="dt sz-${t.size || 's'} `) : '').join('');
+  const tiles = layout.map(t => built[t.id] ? built[t.id].replace('class="dt ', `data-tile="${t.id}" class="dt sz-${t.size || 's'} `) : '').join('');
 
   const html = `<div class="dashboard">${focus}${hero}<div class="dt lrail"><div class="k pad-h">LIVE NOW · MY TEAMS &amp; PRIMETIME<a class="more" href="#/scores">ALL SCORES</a></div><div class="lg">${rail}</div></div>${tiles}<div class="dash-foot mono"><span>Something you wish this did?</span><a href="mailto:michael.stine@gmail.com?subject=NFL%2F26%20feature%20request">Request a feature →</a><span class="sep">·</span><a href="mailto:michael.stine@gmail.com?subject=NFL%2F26%20feedback">Send feedback</a></div></div>`;
   return { html, mount: mountDash };
@@ -179,6 +179,7 @@ function mountDash(root) {
   const ld = root.querySelector('.leaders[data-leaders]');
   if (ld && ld.dataset.leaders) loadLeaders(ld);
   root.querySelector('#dash-customize')?.addEventListener('click', () => openCustomizer(root));
+  if (document.body.classList.contains('dash-edit')) armBoard(root);
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   root.querySelectorAll('.dt').forEach((el, i) => { if (reduce) { el.classList.add('in'); return; } setTimeout(() => el.classList.add('in'), 40 + i * 60); });
   root.querySelectorAll('.bars .b').forEach((b, i) => { const h = b.style.height; if (!h || reduce) return; b.style.height = '4%'; setTimeout(() => { b.style.height = h; }, 200 + i * 40); });
@@ -200,7 +201,9 @@ async function loadLeaders(el) {
 // ---- Customizer: pick tiles, size them, reorder. Saved to prefs (synced with the account).
 function openCustomizer(root) {
   let layout = currentLayout().map(t => ({ ...t }));
+  if (document.getElementById('cust-wrap')) return;
   const wrap = document.createElement('div'); wrap.className = 'cust-wrap'; wrap.id = 'cust-wrap';
+  document.body.classList.add('dash-edit'); armBoard(root);
   const render = () => {
     const on = new Map(layout.map((t, i) => [t.id, i]));
     const row = c => { const i = on.get(c.id); const t = i != null ? layout[i] : null; return `<div class="cust-row${t ? ' on' : ''}" data-id="${c.id}" draggable="${t ? 'true' : 'false'}">
@@ -210,12 +213,13 @@ function openCustomizer(root) {
       </div>`; };
     const ordered = [...layout.map(t => TILE_CATALOG.find(c => c.id === t.id)).filter(Boolean), ...TILE_CATALOG.filter(c => !on.has(c.id))];
     wrap.innerHTML = `<div class="cust-back"></div><div class="cust-panel">
-      <div class="cust-head"><div><div class="disp h3">Customize</div><div class="sub">TAP + TO ADD · S M L F SETS THE WIDTH · DRAG OR ↑↓ TO REORDER</div></div><button type="button" class="btn btn-amber" data-act="done">Done</button></div>
+      <div class="cust-head"><div><div class="disp h3">Customize</div><div class="sub">TAP + TO ADD · DRAG A TILE BY ITS HANDLE TO MOVE IT · DRAG THE CORNER TO RESIZE</div></div><button type="button" class="btn btn-amber" data-act="done">Done</button></div>
       <div class="cust-list">${ordered.map(row).join('')}</div>
       <div class="cust-foot"><button type="button" class="btn" data-act="reset">Reset to default</button><span class="sub">YOUR GAME AND THE LIVE RAIL ALWAYS STAY ON TOP</span></div>
     </div>`;
   };
   const save = () => { state.setDash(layout); };
+  refreshPanel = () => { layout = currentLayout().map(t => ({ ...t })); render(); };
   wrap.addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b && !e.target.closest('.cust-back')) return;
     const act = b?.dataset.act || 'done';
@@ -225,7 +229,7 @@ function openCustomizer(root) {
     else if (act === 'up' && i > 0) [layout[i - 1], layout[i]] = [layout[i], layout[i - 1]];
     else if (act === 'down' && i < layout.length - 1) [layout[i + 1], layout[i]] = [layout[i], layout[i + 1]];
     else if (act === 'reset') layout = DEFAULT_LAYOUT.map(t => ({ ...t }));
-    else if (act === 'done') { wrap.remove(); save(); return; }
+    else if (act === 'done') { wrap.remove(); document.body.classList.remove('dash-edit'); save(); return; }
     render(); save();
   });
   // Drag to reorder (desktop)
@@ -237,3 +241,64 @@ function openCustomizer(root) {
   render();
   document.body.appendChild(wrap);
 }
+
+// ---- On-board editing: drag the handle to swap tiles, drag the corner grip to resize (snaps S/M/L/F).
+const SIZE_COLS = { s: 3, m: 6, l: 9, f: 12 };
+function armBoard(root) {
+  const board = root.querySelector('.dashboard'); if (!board || board.dataset.armed) return;
+  board.dataset.armed = '1';
+  board.querySelectorAll('.dt[data-tile]').forEach(t => { if (!t.querySelector('.grab')) t.insertAdjacentHTML('beforeend', '<span class="grab" title="Drag to move">⋮⋮</span><span class="grip" title="Drag to resize"></span>'); });
+  const layoutNow = () => currentLayout().map(t => ({ ...t }));
+
+  // Move
+  board.addEventListener('pointerdown', e => {
+    const h = e.target.closest('.grab'); if (!h) return;
+    const tile = h.closest('.dt[data-tile]'); e.preventDefault();
+    const start = () => {
+      tile.classList.add('lifting'); tile.setPointerCapture?.(e.pointerId);
+      const r = tile.getBoundingClientRect(); const ox = e.clientX - r.left, oy = e.clientY - r.top;
+      let target = null;
+      const move = ev => {
+        tile.style.transform = `translate(${ev.clientX - r.left - ox}px, ${ev.clientY - r.top - oy}px)`;
+        tile.style.pointerEvents = 'none';
+        const under = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.dt[data-tile]');
+        tile.style.pointerEvents = '';
+        if (under !== target) { target?.classList.remove('drop'); target = under && under !== tile ? under : null; target?.classList.add('drop'); }
+      };
+      const up = () => {
+        window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+        tile.classList.remove('lifting'); tile.style.transform = '';
+        if (target) {
+          target.classList.remove('drop');
+          const l = layoutNow(); const a = l.findIndex(t => t.id === tile.dataset.tile), b = l.findIndex(t => t.id === target.dataset.tile);
+          if (a >= 0 && b >= 0) { const [it] = l.splice(a, 1); l.splice(b, 0, it); state.setDash(l); refreshPanel(); }
+        }
+      };
+      window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+    };
+    if (e.pointerType === 'touch') { let t = setTimeout(start, 250); const cancel = () => { clearTimeout(t); window.removeEventListener('pointerup', cancel); window.removeEventListener('pointermove', cancel); }; window.addEventListener('pointerup', cancel, { once: true }); window.addEventListener('pointermove', cancel, { once: true }); }
+    else start();
+  });
+
+  // Resize
+  board.addEventListener('pointerdown', e => {
+    const g = e.target.closest('.grip'); if (!g) return;
+    const tile = g.closest('.dt[data-tile]'); e.preventDefault(); e.stopPropagation();
+    const colW = board.getBoundingClientRect().width / 12; const left = tile.getBoundingClientRect().left;
+    const sizes = ['s', 'm', 'l', 'f']; let size = sizes.find(z => tile.classList.contains('sz-' + z)) || 's';
+    tile.classList.add('resizing');
+    const move = ev => {
+      const want = Math.max(1, Math.round((ev.clientX - left) / colW));
+      const next = want <= 4 ? 's' : want <= 7 ? 'm' : want <= 10 ? 'l' : 'f';
+      if (next !== size) { tile.classList.remove('sz-' + size); tile.classList.add('sz-' + next); size = next; }
+      tile.querySelector('.grip').dataset.label = size.toUpperCase();
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      tile.classList.remove('resizing');
+      const l = layoutNow(); const t = l.find(x => x.id === tile.dataset.tile); if (t && t.size !== size) { t.size = size; state.setDash(l); refreshPanel(); }
+    };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  });
+}
+let refreshPanel = () => {};
