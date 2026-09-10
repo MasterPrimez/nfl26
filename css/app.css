@@ -283,7 +283,7 @@ td img.mini { width: 20px; height: 20px; object-fit: contain; vertical-align: mi
   .toolbar .viewseg .vs span { display: none; }
   .toolbar .viewseg .vs { padding: 8px 12px; }
   .toolbar .viewseg .vs svg { width: 17px; height: 17px; }
-  .tvwrap, .rankgraph { touch-action: pan-x pan-y; }
+  .tvwrap, .rankgraph { touch-action: pan-x pan-y; -webkit-user-select: none; user-select: none; }
   .rankgraph { overflow-x: auto; }
   .rankgraph .rg-svg { min-width: 100%; }
   .weeks { overflow: visible; }

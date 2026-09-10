@@ -142,8 +142,11 @@ export function pinchZoom(wrap, target, key, opts = {}) {
   (opts.buttons || []).forEach(b => b.addEventListener('click', () => set(z * (b.dataset.zoom === '+' ? 1.2 : 1 / 1.2))));
   let d0 = 0, z0 = 1, lastTap = 0;
   const dist = e => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-  wrap.addEventListener('touchstart', e => { if (e.touches.length === 2) { d0 = dist(e); z0 = z; } }, { passive: true });
-  wrap.addEventListener('touchmove', e => { if (e.touches.length === 2 && d0) { e.preventDefault(); set(z0 * dist(e) / d0); } }, { passive: false });
-  wrap.addEventListener('touchend', e => { d0 = 0; const t = Date.now(); if (t - lastTap < 300 && e.touches.length === 0 && !e.target.closest('a, button, [data-team]')) set(z === 1 ? (opts.alt || 0.6) : 1); lastTap = t; });
+  // Two-finger pinch: take it over completely (otherwise Safari/Chrome zoom the whole page and bounce back).
+  wrap.addEventListener('touchstart', e => { if (e.touches.length === 2) { e.preventDefault(); d0 = dist(e); z0 = z; } }, { passive: false });
+  wrap.addEventListener('touchmove', e => { if (e.touches.length === 2) { e.preventDefault(); if (d0) set(z0 * dist(e) / d0); } }, { passive: false });
+  wrap.addEventListener('touchend', e => { if (e.touches.length < 2) d0 = 0; const t = Date.now(); if (t - lastTap < 300 && e.touches.length === 0 && !e.target.closest('a, button, [data-team]')) set(z === 1 ? (opts.alt || 0.6) : 1); lastTap = t; });
+  // Safari's proprietary gesture events fire alongside touch events; block them so the page itself never zooms.
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(n => wrap.addEventListener(n, e => e.preventDefault(), { passive: false }));
 }
 export function zoomControl(id) { return `<div class="tvzoom mono" id="${id}"><button type="button" data-zoom="-">−</button><span class="zv">100%</span><button type="button" data-zoom="+">+</button><span class="hint">PINCH TO ZOOM</span></div>`; }
