@@ -1,6 +1,6 @@
 import { esc, filterBar, applyFilter, isMobile, gameRowMobile, viewSwitch, pinchZoom, zoomControl } from '../ui.js';
 import { fmtDay, dayKey, hourOf, tzLabel, state } from '../state.js';
-import { NETWORK_ORDER, networkClass, primaryNetwork, watchSummary } from '../networks.js';
+import { NETWORK_ORDER, networkClass, primaryNetwork, watchSummary, watchOptions, markHtml } from '../networks.js';
 
 const GAME_HOURS = 3.5;
 
@@ -64,7 +64,7 @@ export function renderTV(ctx, params) {
   }).join('');
 
   return header() + `<div class="tvwrap" id="tvwrap"><div class="tvgrid" id="tvgrid">${head}${rows}</div></div>${isMobile() ? zoomControl('tvzoom') : ''}
-    <div class="legend"><span><i style="display:inline-block;width:10px;height:10px;border:1px solid var(--live);border-radius:2px;vertical-align:middle;margin-right:6px"></i>LIVE NOW</span><span><i style="display:inline-block;width:10px;height:10px;background:rgba(245,165,36,0.25);vertical-align:middle;margin-right:6px"></i>CURRENT HALF-HOUR</span><span>FINALS DIMMED · COLOR BAR = AWAY (TOP) / HOME (BOTTOM) · BLOCKS RUN ${GAME_HOURS} HRS AND EXTEND WHILE LIVE · TIMES IN ${tzLabel()}</span></div>`;
+    <div class="legend"><span><i style="display:inline-block;width:10px;height:10px;border:1px solid var(--live);border-radius:2px;vertical-align:middle;margin-right:6px"></i>LIVE NOW</span><span><i style="display:inline-block;width:10px;height:10px;background:rgba(245,165,36,0.25);vertical-align:middle;margin-right:6px"></i>CURRENT HALF-HOUR</span><span>FINALS DIMMED · AWAY TEAM LEFT, HOME TEAM RIGHT · BLOCKS RUN ${GAME_HOURS} HRS AND EXTEND WHILE LIVE · TIMES IN ${tzLabel()}</span></div>`;
 
   function header() {
     const w = calendar.find(x => x.key === week);
@@ -85,10 +85,11 @@ function block(g, startH, slots, nowSameDay, nowH) {
   const c0 = Math.max(0, Math.round((s - startH) * 2));
   const span = Math.max(2, Math.min(slots - c0, Math.round((e - s) * 2)));
   const cls = g.state === 'in' ? ' live' : g.state === 'post' ? ' done' : '';
-  const st = g.state === 'in' ? `<span class="st live">● ${esc(g.detail)}</span>` : g.state === 'post' ? `<span class="st">FINAL ${g.away.score}–${g.home.score}</span>` : `<span class="st">${esc(watchSummary(g.networks, state.myServices).split(' · ')[0])}</span>`;
+  const opts = watchOptions(g.networks); const svc = opts.find(o => state.myServices.has(o.id)) || opts.find(o => o.kind === 'primary') || opts[0];
+  const st = g.state === 'in' ? `<span class="st live">● ${esc(g.detail)}</span>` : g.state === 'post' ? `<span class="st">FINAL ${g.away.score}–${g.home.score}</span>` : `<span class="st svc">${svc ? markHtml(svc, 16) : ''}${esc(watchSummary(g.networks, state.myServices).split(' · ')[0])}</span>`;
   const ln = (t, home) => `<div class="ln${state.isMine(t.id) ? ' mine' : ''}"><img src="${esc(t.logo)}" alt="" loading="lazy">${home ? '<span class="muted" style="font-size:10px">@</span>' : ''}${t.rank ? `<span class="rank">#${t.rank}</span>` : ''}<span style="overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>${g.state !== 'pre' && t.score != null ? `<span class="mono muted" style="font-size:10px;margin-left:auto;padding-left:6px">${t.score}</span>` : ''}</div>`;
-  return `<div class="tv-block${cls}" style="grid-column:${c0 + 2} / span ${span}" data-game="${g.id}" title="${esc(g.name)}">
-    <div class="bar" style="background:linear-gradient(180deg,${g.away.color} 0%,${g.away.color} 50%,${g.home.color} 50%,${g.home.color} 100%)"></div>
+  return `<div class="tv-block${cls}" style="grid-column:${c0 + 2} / span ${span};--a:${esc(g.away.color)};--b:${esc(g.home.color)}" data-game="${g.id}" title="${esc(g.name)}">
+    <img class="ghost a" src="${esc(g.away.logo)}" alt="" aria-hidden="true" loading="lazy"><img class="ghost b" src="${esc(g.home.logo)}" alt="" aria-hidden="true" loading="lazy">
     <div class="lines">${ln(g.away, false)}${ln(g.home, true)}</div>${st}
   </div>`;
 }

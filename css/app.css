@@ -176,14 +176,20 @@ td img.mini { width: 20px; height: 20px; object-fit: contain; vertical-align: mi
 .tv-slot span { color: var(--dim); }
 .tv-cell { grid-row: 1; border-left: 1px solid #16181c; }
 .tv-cell.now { background: rgba(245,165,36,0.06); }
-.tv-block { grid-row: 1; margin: 5px 3px; border: 1px solid var(--line3); border-radius: 3px; background: var(--panel); display: flex; align-items: stretch; overflow: hidden; cursor: pointer; z-index: 1; }
-.tv-block.live { border-color: var(--live); } .tv-block.done { opacity: 0.45; }
+.tv-block { grid-row: 1; margin: 5px 3px; border: 1px solid rgba(255,255,255,.12); border-radius: 4px; display: flex; align-items: stretch; overflow: hidden; cursor: pointer; z-index: 1; position: relative; isolation: isolate;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--a, #333) 60%, #000) 0%, color-mix(in srgb, var(--a, #333) 30%, var(--panel)) 44%, color-mix(in srgb, var(--b, #333) 30%, var(--panel)) 56%, color-mix(in srgb, var(--b, #333) 60%, #000) 100%); }
+.tv-block:hover { border-color: rgba(255,255,255,.35); }
+.tv-block .ghost { position: absolute; top: 50%; width: 92px; height: 92px; object-fit: contain; opacity: .16; z-index: -1; pointer-events: none; transform: translateY(-50%); }
+.tv-block .ghost.a { left: 34%; } .tv-block .ghost.b { right: -8px; }
+.tv-block.live { border-color: var(--live); } .tv-block.done { opacity: 0.5; }
 .tv-block .bar { width: 4px; flex-shrink: 0; }
-.tv-block .lines { display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 8px; flex-grow: 1; min-width: 0; }
-.tv-block .ln { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tv-block .ln img { width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; }
+.tv-block .lines { display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 8px 0 12px; flex-grow: 1; min-width: 0; }
+.tv-block .ln { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 12px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-block .ln img { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 1px 3px rgba(0,0,0,.6)); }
 .tv-block .ln .rank { font-family: var(--mono); font-size: 9px; color: var(--amber); }
-.tv-block .st { display: flex; align-items: flex-start; padding: 6px 8px 0 0; font-family: var(--mono); font-size: 9px; color: var(--muted); white-space: nowrap; }
+.tv-block .st { display: flex; align-items: flex-start; padding: 6px 8px 0 0; font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,.85); text-shadow: 0 1px 2px rgba(0,0,0,.7); white-space: nowrap; }
+.tv-block .st.svc { align-items: center; gap: 6px; padding: 0 8px 0 0; font-size: 10px; }
+.tv-block .st.svc .mark { box-shadow: 0 1px 3px rgba(0,0,0,.6); }
 .tv-block .st.live { color: var(--live); }
 .legend { display: flex; gap: 24px; font-family: var(--mono); font-size: 10px; color: var(--muted); padding-top: 14px; flex-wrap: wrap; }
 
