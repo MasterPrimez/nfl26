@@ -324,7 +324,7 @@ function setupWelcome() {
   $('#foot-support').href = SUPPORT_URL; $('#foot-support').target = '_blank'; $('#foot-support').rel = 'noopener';
   let seen = false; try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
   if (seen) return;
-  const dismiss = () => { el.hidden = true; try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch {} };
+  const dismiss = () => { el.hidden = true; try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch {} if (!state.prefs.teams.length) setTimeout(openModal, 250); };
   $('#welcome-skip').onclick = dismiss;
   $('#welcome-support').addEventListener('click', () => setTimeout(dismiss, 300));
   el.hidden = false;
