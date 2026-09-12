@@ -151,7 +151,8 @@ async function refresh() {
     ctx.error = null;
     const r = route();
     if (r.name === 'home') { const id = state.focusTeam; if (id && ctx.directory) { delete ctx.home?.[id]; const d = await loadHome(ctx, id).catch(() => null); if (homeSignature(ctx, d) !== ctx.homeSig) await render({ quiet: true }); } }
-    else if (r.name !== 'team' && r.name !== 'teams' && r.name !== 'standings') await render();
+    else if (r.name === 'team') { if (ctx.games.some(g => g.state === 'in' && (String(g.home.id) === String(r.id) || String(g.away.id) === String(r.id)))) await render({ quiet: true }); }
+    else if (r.name !== 'teams' && r.name !== 'standings') await render();
     renderMyTeams();
   } catch (e) { ctx.error = e; console.warn(e); }
   statusFromData();

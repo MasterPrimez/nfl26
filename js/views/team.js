@@ -2,6 +2,7 @@ import { esc, statusBadge } from '../ui.js';
 import { api, logoUrl, pickLogo } from '../api.js';
 import { fmtShortDate, fmtTime, tzLabel, state } from '../state.js';
 import { primaryNetwork, watchSummary } from '../networks.js';
+import { renderLiveBar, featuredGame } from './livebar.js';
 
 export async function renderTeam(ctx, params) {
   const id = params.id;
@@ -17,6 +18,7 @@ export async function renderTeam(ctx, params) {
   const seed = seedT?.seed || null;
 
   const events = (sched.events || []).map(e => normSched(e, id)).sort((a, b) => a.date - b.date);
+  const liveBar = renderLiveBar(featuredGame(ctx, events, id), id);
   const next = events.find(e => e.state !== 'post');
 
   const rows = events.map(e => `<tr class="rowlink" data-game="${e.id}">
@@ -46,6 +48,7 @@ export async function renderTeam(ctx, params) {
       </div>
       <button class="btn${state.isMine(id) ? ' on' : ' btn-amber'}" data-star="${id}" type="button" style="align-self:flex-start">${state.isMine(id) ? '★ In My Teams' : '☆ Add to My Teams'}</button>
     </div>
+    ${liveBar}
     <div class="grid-main">
       <div class="panel rows">
         <div style="display:flex;align-items:baseline;gap:12px;padding:10px 10px 4px"><div class="disp h3">2026 Schedule</div><div class="sub">TIMES IN ${tzLabel()} · TAP A ROW FOR GAME DETAIL</div></div>
