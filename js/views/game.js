@@ -1,4 +1,4 @@
-import { esc, statusBadge } from '../ui.js';
+import { esc, statusBadge, liveClock } from '../ui.js';
 import { api, normalizeEvent, logoUrl } from '../api.js';
 import { fmtDay, state } from '../state.js';
 import { watchOptions, primaryNetwork, displayNetwork, SERVICES, markHtml, networkMark } from '../networks.js';
@@ -59,7 +59,7 @@ export async function renderGame(ctx, params) {
   return `<div class="sub" style="margin-bottom:6px"><a href="#/scores">← Scores</a></div>
     <div class="game-head" style="background:linear-gradient(90deg,${g.away.color}22 0%,transparent 40%,transparent 60%,${g.home.color}22 100%)">
       ${side(g.away, false)}
-      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">${statusBadge(g)}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">${liveClock(g)}
         <div class="score"><span class="${g.state !== 'pre' && (g.away.score ?? 0) >= (g.home.score ?? 0) ? '' : 'muted'}">${g.state === 'pre' ? '' : g.away.score ?? ''}</span><span class="dash">${g.state === 'pre' ? esc(fmtDay(g.date)) : '–'}</span><span class="${g.state !== 'pre' && (g.home.score ?? 0) >= (g.away.score ?? 0) ? '' : 'muted'}">${g.state === 'pre' ? '' : g.home.score ?? ''}</span></div>
         <div class="sub">${g.state === 'in' && g.situation ? esc(g.situation.text || '') : (g.headline ? esc(g.headline) : '')}</div></div>
       ${side(g.home, true)}

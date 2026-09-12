@@ -1,5 +1,5 @@
 // Team page → live scoreboard bar for the team's game in progress (or a slim "Final" bar right after).
-import { esc } from '../ui.js';
+import { esc, liveClock } from '../ui.js';
 import { state } from '../state.js';
 import { primaryNetwork, watchOptions, displayNetwork } from '../networks.js';
 
@@ -17,7 +17,7 @@ export function renderLiveBar(g, myId) {
   const myP = hw != null ? Math.round((meHome ? hw : 1 - hw) * 100) : null;
   const net = primaryNetwork(g.networks);
   const opts = watchOptions(g.networks); const myOpt = opts.find(o => state.myServices.has(o.id)) || opts.find(o => o.kind === 'primary');
-  const status = live ? `<div class="status live">LIVE · ${esc(g.detail)}</div>` : `<div class="status">FINAL${/OT/.test(g.detail) ? ' · ' + esc(g.detail) : ''} · ${me.winner ? 'WIN' : 'LOSS'}</div>`;
+  const status = live ? `<div class="status live">${liveClock(g)}</div>` : `<div class="status">FINAL${/OT/.test(g.detail) ? ' · ' + esc(g.detail) : ''} · ${me.winner ? 'WIN' : 'LOSS'}</div>`;
   return `<div class="livebar${live ? ' on' : ' done'}" style="--a:${esc(g.away.color)};--b:${esc(g.home.color)}">
     <img class="ghost a" src="${esc(g.away.logo)}" alt="" aria-hidden="true"><img class="ghost b" src="${esc(g.home.logo)}" alt="" aria-hidden="true">
     ${side(g.away, false, '')}

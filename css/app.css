@@ -875,3 +875,11 @@ a.dt:hover, .dt[data-href]:hover { border-color: var(--line3); color: var(--text
   .livebar .foot .q { width: 100%; justify-content: space-between; } .livebar .wpr { flex: 1 1 100%; }
   .livebar .foot .pill { flex: 1; justify-content: center; }
 }
+
+/* Big live clock (game header + team live bar) */
+.badge.live.bigclock { font-family: var(--disp); font-size: 44px; letter-spacing: .04em; padding: 6px 18px 2px; border: 0; border-radius: 0; background: none; color: var(--live); display: inline-flex; align-items: baseline; gap: 14px; line-height: 1; }
+.badge.live.bigclock .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--live); align-self: center; animation: dpulse 1.2s infinite; box-shadow: 0 0 12px var(--live); }
+.badge.live.bigclock .qtr { font-family: var(--mono); font-size: 13px; letter-spacing: .16em; color: var(--live); opacity: .85; padding: 4px 8px; border: 1px solid var(--live); border-radius: 4px; align-self: center; }
+.livebar .mid .status.live:before { content: none; }
+.livebar .mid .status.live .bigclock { font-size: 36px; padding: 0 0 4px; }
+@media (max-width: 700px) { .badge.live.bigclock { font-size: 30px; gap: 10px; } .badge.live.bigclock .dot { width: 9px; height: 9px; } .livebar .mid .status.live .bigclock { font-size: 26px; } }

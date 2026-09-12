@@ -150,3 +150,14 @@ export function pinchZoom(wrap, target, key, opts = {}) {
   ['gesturestart', 'gesturechange', 'gestureend'].forEach(n => wrap.addEventListener(n, e => e.preventDefault(), { passive: false }));
 }
 export function zoomControl(id) { return `<div class="tvzoom mono" id="${id}"><button type="button" data-zoom="-">−</button><span class="zv">100%</span><button type="button" data-zoom="+">+</button><span class="hint">PINCH TO ZOOM</span></div>`; }
+
+// Big live clock for game headers: "8:40" + quarter tag, or HALF / END 3RD / OT.
+export function liveClock(g) {
+  if (g.state !== 'in') return statusBadge(g);
+  const d = g.detail || '';
+  const m = /^(\d{1,2}:\d{2})\s*[-–·]\s*(.+)$/.exec(d);
+  const per = g.period ? (g.period <= 4 ? ['1ST', '2ND', '3RD', '4TH'][g.period - 1] : 'OT' + (g.period > 5 ? g.period - 4 : '')) : '';
+  if (m) return `<span class="badge live bigclock"><span class="dot"></span>${esc(g.clock || m[1])}<span class="qtr">${esc((m[2] || per).toUpperCase().replace(/^(\d)(ST|ND|RD|TH)$/, '$1$2'))}</span></span>`;
+  const word = /half/i.test(d) ? 'HALF' : /end/i.test(d) ? d.toUpperCase().replace(/END OF/, 'END') : d.toUpperCase();
+  return `<span class="badge live bigclock"><span class="dot"></span>${esc(word)}</span>`;
+}
