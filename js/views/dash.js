@@ -21,8 +21,9 @@ export const TILE_CATALOG = [
   { id: 'upset',     name: 'Primetime',             blurb: 'This week\'s standalone games: TNF, SNF, MNF.' },
   { id: 'close',     name: 'Closest games',         blurb: 'Live games inside one score.' },
   { id: 'countdown', name: 'Countdown',             blurb: 'A big clock to kickoff.' },
+  { id: 'livegrid',  name: 'Live scoreboard',       blurb: 'Every game in progress: big scores, clock and quarter. Close games glow red.' },
 ];
-export const DEFAULT_LAYOUT = [{ id: 'rank', size: 's' }, { id: 'stride', size: 'm' }, { id: 'tv', size: 's' }, { id: 'stand', size: 's' }, { id: 'cfp', size: 'm' }, { id: 'mov', size: 's' }];
+export const DEFAULT_LAYOUT = [{ id: 'livegrid', size: 'f' }, { id: 'rank', size: 's' }, { id: 'stride', size: 'm' }, { id: 'tv', size: 's' }, { id: 'stand', size: 's' }, { id: 'cfp', size: 'm' }, { id: 'mov', size: 's' }];
 const SIZES = ['s', 'm', 'l', 'f'];
 export function currentLayout() { const l = state.prefs.dash; return Array.isArray(l) && l.length ? l.filter(t => TILE_CATALOG.some(c => c.id === t.id)) : DEFAULT_LAYOUT; }
 const cols = size => ({ s: 3, m: 6, l: 9, f: 12 })[size] || 3;
@@ -155,7 +156,14 @@ export function renderDash(ctx, d) {
     <div class="cd">${live ? `<span class="big live">${esc(game.detail)}</span>` : final ? `<span class="big">${myScore}–${oppScore}</span>` : next && !next.tbd ? '<span class="n" data-u="d">0</span><small>D</small><span class="n" data-u="h">0</span><small>H</small><span class="n" data-u="m">0</span><small>M</small><span class="n" data-u="s">0</span><small>S</small>' : '<span class="big nr">TBA</span>'}</div>
     <div class="sub2">${next ? esc(fmtDay(next.date).toUpperCase()) + (next.tbd ? '' : ' · ' + fmtTime(next.date) + ' ' + tzLabel()) : 'SEASON COMPLETE'}</div></div>`;
 
-  const built = { rank: rankTile, stride: strideTile, tv: tvTile, stand: standTile, cfp: cfpTile, mov: movTile, next3: next3Tile, form: formTile, line: lineTile, leaders: leadersTile, upset: upsetTile, close: closeTile, countdown: cdTile };
+
+  // ---- Live scoreboard: every game in progress, mine first then closest.
+  const lgGames = [...liveGames].sort((a, b) => ((mine.has(a.home.id) || mine.has(a.away.id)) ? 0 : 1) - ((mine.has(b.home.id) || mine.has(b.away.id)) ? 0 : 1) || Math.abs((a.home.score || 0) - (a.away.score || 0)) - Math.abs((b.home.score || 0) - (b.away.score || 0)));
+  const lgCard = g => { const m = Math.abs((g.home.score || 0) - (g.away.score || 0)); const close = m <= 8; const d = g.detail || ''; const mm = /^(\d{1,2}:\d{2})\s*[-–·]\s*(.+)$/.exec(d); const clk = mm ? mm[1] : (/half/i.test(d) ? 'HALF' : /end/i.test(d) ? d.toUpperCase().replace('END OF', 'END') : d.toUpperCase()); const q = mm ? mm[2].toUpperCase() : ''; const posId = g.situation?.possession ? String(g.situation.possession) : null; const tm = t => `<div class="tm"><img src="${esc(t.logo)}" alt="">${t.rank ? `<small>#${t.rank}</small>` : ''}<em>${esc(t.name)}</em>${posId === String(t.id) ? '<span class="poss"></span>' : ''}</div>`; return `<a class="lgc${close ? ' close' : ''}" href="#/game/${g.id}">${tm(g.away)}<div class="sc${(g.away.score || 0) < (g.home.score || 0) ? ' trail' : ''}">${g.away.score ?? 0}</div>${tm(g.home)}<div class="sc${(g.home.score || 0) < (g.away.score || 0) ? ' trail' : ''}">${g.home.score ?? 0}</div><div class="clk"><span class="t">${esc(clk)}</span>${q ? `<span class="q">${esc(q)}</span>` : ''}<span class="net">${esc(displayNetwork(primaryNetwork(g.networks) || ''))}</span></div></a>`; };
+  const lgSize = layout.find(t => t.id === 'livegrid')?.size || 'f'; const lgCols = isMobile() ? 1 : ({ s: 1, m: 2, l: 3, f: 4 })[lgSize]; const lgRows = Math.max(1, Math.ceil(lgGames.length / lgCols));
+  const livegridTile = !lgGames.length && !document.body.classList.contains('dash-edit') ? '' : `<div class="dt livegrid pad" style="grid-row:span ${isMobile() ? 1 : Math.ceil((60 + lgRows * 172) / 108)}"><div class="k">LIVE SCOREBOARD · ${lgGames.length} GAME${lgGames.length === 1 ? '' : 'S'} ON<span class="svc"> · RED GLOW = ONE-SCORE GAME</span><a class="more" href="#/scores">ALL SCORES</a></div><div class="lg2">${lgGames.map(lgCard).join('') || '<div class="muted mono" style="font-size:11px">Nothing live right now — this tile fills up at kickoff.</div>'}</div></div>`;
+
+  const built = { rank: rankTile, stride: strideTile, tv: tvTile, stand: standTile, cfp: cfpTile, mov: movTile, next3: next3Tile, form: formTile, line: lineTile, leaders: leadersTile, upset: upsetTile, close: closeTile, countdown: cdTile, livegrid: livegridTile };
   const tiles = layout.map(t => built[t.id] ? built[t.id].replace('class="dt ', `data-tile="${t.id}" class="dt sz-${t.size || 's'} `) : '').join('');
 
   const html = `<div class="dashboard">${focus}${hero}<div class="dt lrail"><div class="k pad-h">LIVE NOW · MY TEAMS &amp; PRIMETIME<a class="more" href="#/scores">ALL SCORES</a></div><div class="lg">${rail}</div></div>${tiles}<div class="dash-foot mono"><span>Something you wish this did?</span><a href="mailto:michael.stine@gmail.com?subject=NFL%2F26%20feature%20request">Request a feature →</a><span class="sep">·</span><a href="mailto:michael.stine@gmail.com?subject=NFL%2F26%20feedback">Send feedback</a></div></div>`;
