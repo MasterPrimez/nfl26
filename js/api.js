@@ -73,7 +73,7 @@ export function normalizeEvent(e) {
     neutral: !!c.neutralSite,
     networks,
     odds: odds ? { details: odds.details, overUnder: odds.overUnder, spread: odds.spread } : null,
-    situation: c.situation ? { possession: c.situation.possession, text: c.situation.downDistanceText, lastPlay: c.situation.lastPlay?.text, homeWin: c.situation.lastPlay?.probability?.homeWinPercentage } : null,
+    situation: c.situation ? { raw: c.situation, possession: c.situation.possession, text: c.situation.downDistanceText, lastPlay: c.situation.lastPlay?.text, homeWin: c.situation.lastPlay?.probability?.homeWinPercentage } : null,
     headline: c.headlines && c.headlines[0]?.shortLinkText,
     tbd: /TBD|TBA/i.test(st.detail || '') || e.timeValid === false,
   };
