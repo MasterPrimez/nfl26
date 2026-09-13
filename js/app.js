@@ -56,7 +56,7 @@ async function render(opts = {}) {
       case 'teams': html = renderTeams(ctx); break;
       case 'stats': { const out = renderStats(ctx); html = out.html; mount = out.mount || null; break; }
       case 'team': html = ctx.directory ? await renderTeam(ctx, { id: r.id }) : '<div class="panel empty">Loading…</div>'; break;
-      case 'game': html = await renderGame(ctx, { id: r.id }); break;
+      case 'game': { const out = await renderGame(ctx, { id: r.id }); if (typeof out === 'string') html = out; else { html = out.html; mount = out.mount || null; } break; }
       case 'scores': default: html = renderScores({ ...ctx, week: ctx.weekKey });
     }
     const y = window.scrollY;

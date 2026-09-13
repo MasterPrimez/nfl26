@@ -1,4 +1,5 @@
 import { esc, statusBadge, liveClock } from '../ui.js';
+import { renderField } from './field.js';
 import { api, normalizeEvent, logoUrl } from '../api.js';
 import { fmtDay, state } from '../state.js';
 import { watchOptions, primaryNetwork, displayNetwork, SERVICES, markHtml, networkMark } from '../networks.js';
@@ -56,7 +57,8 @@ export async function renderGame(ctx, params) {
   const weather = sum?.gameInfo?.weather;
   const side = (t, right) => `<div class="side${right ? ' r' : ''}">${right ? '' : `<img src="${esc(t.logo)}" alt="">`}<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><div class="mono amber" style="font-size:12px">${t.rank ? '#' + t.rank + ' · ' : ''}${right ? 'HOME' : (g.neutral ? 'NEUTRAL' : 'AWAY')}</div><div class="disp big"><a href="#/team/${t.id}" style="color:inherit"><span class="nm-full">${esc(t.fullName)}</span><span class="nm-short">${esc(t.name)}</span></a></div><div class="sub">${esc(t.record)}${t.confRecord ? ' · ' + esc(t.confRecord) + ' conf' : ''}</div></div>${right ? `<img src="${esc(t.logo)}" alt="">` : ''}</div>`;
 
-  return `<div class="sub" style="margin-bottom:6px"><a href="#/scores">← Scores</a></div>
+  let field = null; try { field = renderField(g, sum); } catch (e) { console.warn('field', e); }
+  const html = `<div class="sub" style="margin-bottom:6px"><a href="#/scores">← Scores</a></div>
     <div class="game-head" style="background:linear-gradient(90deg,${g.away.color}22 0%,transparent 40%,transparent 60%,${g.home.color}22 100%)">
       ${side(g.away, false)}
       <div style="display:flex;flex-direction:column;align-items:center;gap:8px">${liveClock(g)}
@@ -64,6 +66,7 @@ export async function renderGame(ctx, params) {
         <div class="sub">${g.state === 'in' && g.situation ? esc(g.situation.text || '') : (g.headline ? esc(g.headline) : '')}</div></div>
       ${side(g.home, true)}
     </div>
+    ${field ? field.html : ''}
     <div class="game-cols">
       <div class="stack" style="gap:16px">
         <div class="panel panel-pad stack" style="gap:14px"><div class="disp h3">Kickoff</div>
@@ -91,6 +94,7 @@ export async function renderGame(ctx, params) {
         ${wp != null && g.state !== 'pre' ? `<div class="panel panel-pad stack" style="gap:8px"><div class="disp h3">Win Probability</div><div style="display:flex;align-items:baseline;gap:10px"><span class="disp" style="font-size:40px;line-height:1">${wp >= 50 ? wp : 100 - wp}%</span><span class="sub">${esc(wp >= 50 ? g.home.name.toUpperCase() : g.away.name.toUpperCase())}</span></div></div>` : ''}
       </div>
     </div>`;
+  return { html, mount: field?.mount || null };
 }
 
 function countdown(date) {
