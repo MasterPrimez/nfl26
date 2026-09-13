@@ -586,6 +586,9 @@ html[data-theme="team"] .rank-badge { background: linear-gradient(180deg, var(--
 .teamgraph { margin: 0 0 16px; padding: 0 0 6px; }
 .tg-head { display: flex; align-items: baseline; gap: 12px; padding: 12px 14px 4px; flex-wrap: wrap; }
 .tg-head .rg-legend { margin-left: auto; padding: 0; }
+.tg-head .rg-legend { font-size: 15px; gap: 26px; letter-spacing: .12em; color: var(--text); }
+.tg-head .rg-legend i { width: 30px; height: 5px; margin-right: 10px; border-radius: 3px; }
+.tg-head .rg-legend i.dot { width: 16px; height: 16px; }
 .rg-legend i.dot { width: 10px; height: 10px; border-radius: 50%; }
 .tg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 6px 8px 0; }
 .tg-svg { width: 100%; height: auto; display: block; }
