@@ -1,6 +1,6 @@
 // Live game → "Field": a 3D-projected field showing the ball spot, first-down line and the last play animated
 // (runs along the turf, passes and kicks arc through the air). Plain SVG so it works everywhere, iOS included.
-// Layout: away team's end zone on the left (matches the game header), home on the right.
+// Layout follows the TV graphic: the offense's end zone is on the left and it drives to the right.
 import { esc } from '../ui.js';
 
 const FW = 53.3; // field width in yards
@@ -56,7 +56,13 @@ export function renderField(g, sum) {
   lastAnimated = playId;
   const driveTxt = drive ? [drive.offensivePlays != null ? drive.offensivePlays + ' PLAYS' : '', drive.yards != null ? drive.yards + ' YDS' : '', drive.timeElapsed?.displayValue || ''].filter(Boolean).join(' · ') : '';
 
-  const cfg = { u0, u1, uFD, dir, kind, incomplete, scoring, p1: abbrevName(p1).toUpperCase(), p2: abbrevName(p2).toUpperCase(), h1, h2, animate, off: { color: off.color, logo: off.logo }, redZone: dir > 0 ? [90, 110] : [10, 30], away: { name: g.away.name, color: g.away.color, logo: g.away.logo }, home: { name: g.home.name, color: g.home.color, logo: g.home.logo } };
+  // Broadcast orientation: the offense always drives left → right, so its own end zone is on the left.
+  const mirror = u => u == null ? null : 120 - u;
+  const opp = off === g.home ? g.away : g.home;
+  const [L, R] = [off, opp];
+  if (dir < 0) { u0 = mirror(u0); u1 = mirror(u1); }
+  const uFDo = dir < 0 ? mirror(uFD) : uFD;
+  const cfg = { u0, u1, uFD: uFDo, dir: 1, kind, incomplete, scoring, p1: abbrevName(p1).toUpperCase(), p2: abbrevName(p2).toUpperCase(), h1, h2, animate, off: { color: off.color, logo: off.logo }, redZone: [90, 110], away: { name: L.name, color: L.color, logo: L.logo }, home: { name: R.name, color: R.color, logo: R.logo } };
   const html = `<div class="panel field-panel" id="field-panel" data-cfg="${esc(JSON.stringify(cfg))}">
     <div class="fp-head"><div class="disp h3">Field</div><div class="sub">LIVE · ${esc(g.detail || '')} · ${esc(off.name.toUpperCase())} BALL</div><span class="dd">${esc([dd, spotTxt].filter(Boolean).join(' · ').toUpperCase())}</span></div>
     <svg class="field-svg" viewBox="0 0 860 330" id="field-svg"></svg>
@@ -84,7 +90,7 @@ export function mountField(root) {
   s += poly([[0, 0], [120, 0], [120, 1], [0, 1]], 'url(#fsh)');
   for (let u = 10; u <= 110; u += 5) s += line([u, 0], [u, 1], `rgba(255,255,255,${u % 10 ? '.35' : '.8'})`, u % 10 ? 1 : 1.6);
   for (let u = 11; u < 110; u++) for (const v of [.36, .64]) s += line([u, v - .02], [u, v + .02], 'rgba(255,255,255,.55)', 1);
-  for (let u = 20; u <= 100; u += 10) { const n = u <= 60 ? u - 10 : 110 - u; for (const [v, rot] of [[.86, 0], [.14, 180]]) { const [x, y] = P(u, v); const sc = (SF + (SN - SF) * v) / SN; s += `<text x="${x}" y="${y}" font-family="Bebas Neue,Oswald,Arial Narrow,sans-serif" font-size="${22 * sc}" fill="rgba(255,255,255,.8)" text-anchor="middle" dominant-baseline="middle" transform="rotate(${rot} ${x} ${y})">${n}</text>`; } }
+  for (let u = 20; u <= 100; u += 10) { const n = u <= 60 ? u - 10 : 110 - u; for (const [v, rot] of [[.86, 0], [.14, 0]]) { const [x, y] = P(u, v); const sc = (SF + (SN - SF) * v) / SN; s += `<text x="${x}" y="${y}" font-family="Bebas Neue,Oswald,Arial Narrow,sans-serif" font-size="${22 * sc}" fill="rgba(255,255,255,.8)" text-anchor="middle" dominant-baseline="middle" transform="rotate(${rot} ${x} ${y})">${n}</text>`; } }
   for (const [t, u, d] of [[A, 5, -1], [B, 115, 1]]) {
     const [x, y] = P(u, .5);
     const vx = [0, 1].map(i => (P(u, d < 0 ? 0 : 1)[i] - P(u, d < 0 ? 1 : 0)[i]) / FW), vy = [0, 1].map(i => P(u - d, .5)[i] - P(u, .5)[i]);
